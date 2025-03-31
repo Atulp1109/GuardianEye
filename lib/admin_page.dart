@@ -5,6 +5,8 @@ import 'add_staff.dart';
 import 'analytics_page.dart';
 
 class AdminPage extends StatelessWidget {
+  const AdminPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
