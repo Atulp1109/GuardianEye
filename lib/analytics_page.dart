@@ -1,68 +1,15 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AnalyticsPage extends StatefulWidget {
-  @override
-  _AnalyticsPageState createState() => _AnalyticsPageState();
-}
-
-class _AnalyticsPageState extends State<AnalyticsPage> {
-  List<CaseStatusData> _caseData = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchCaseData();
-  }
-
-  Future<void> _fetchCaseData() async {
-    try {
-      // Fetch case data from Firestore
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('cases').get();
-
-      // Process case data to generate analytics
-      List<CaseStatusData> data = [];
-
-      // Count the number of cases for each status
-      Map<String, int> statusCounts = {};
-
-      querySnapshot.docs.forEach((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        String status = data['status'] ?? 'Unknown';
-        statusCounts[status] = (statusCounts[status] ?? 0) + 1;
-      });
-
-      // Convert status counts to CaseStatusData objects
-      statusCounts.forEach((status, count) {
-        data.add(CaseStatusData(status, count));
-      });
-
-      setState(() {
-        _caseData = data;
-      });
-    } catch (e) {
-      print('Error fetching case data: $e');
-    }
-  }
+class AnalyticsPage extends StatelessWidget {
+  final List<CaseStatusData> _caseData = [
+    CaseStatusData('Open', 10),
+    CaseStatusData('Closed', 5),
+    CaseStatusData('Pending', 8),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final series = [
-      charts.Series<CaseStatusData, String>(
-        id: 'Cases',
-        domainFn: (CaseStatusData caseData, _) => caseData.status,
-        measureFn: (CaseStatusData caseData, _) => caseData.numberOfCases,
-        data: _caseData,
-        colorFn: (_, __) => charts.ColorUtil.fromDartColor(Colors.blue),
-      )
-    ];
-
-    final chart = charts.BarChart(
-      series,
-      animate: true,
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Analytics'),
@@ -80,7 +27,42 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             Container(
               height: 300,
               width: 300,
-              child: chart,
+              child: BarChart(
+                BarChartData(
+                  barGroups: _caseData
+                      .asMap()
+                      .entries
+                      .map(
+                        (entry) => BarChartGroupData(
+                      x: entry.key,
+                      barRods: [
+                        BarChartRodData(
+                          toY: entry.value.numberOfCases.toDouble(),
+                          color: Colors.blue,
+                          width: 20,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    ),
+                  )
+                      .toList(),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: true),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          return Text(_caseData[value.toInt()].status);
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  gridData: FlGridData(show: false),
+                ),
+              ),
             ),
           ],
         ),

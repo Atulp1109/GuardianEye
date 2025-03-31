@@ -21,15 +21,15 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
   bool _credentialsGenerated = false;
   late List<DocumentSnapshot> _credentials = [];
 
-
-  void sendEmail(String userEmail,String password) async {
-    final Email email = Email(
-      body: 'You have been registered as a staff on GuardianEye. Your Password is: $password',
-      subject: 'Registration on GuardianEye',
-      recipients: ['$userEmail'],
-    );
-    await FlutterEmailSender.send(email);
-  }
+  // void sendEmail(String userEmail, String password) async {
+  //   final Email email = Email(
+  //     body:
+  //         'You have been registered as a staff on GuardianEye. Your Password is: $password',
+  //     subject: 'Registration on GuardianEye',
+  //     recipients: ['$userEmail'],
+  //   );
+  //   await FlutterEmailSender.send(email);
+  // }
 
   void _addStaffMember() async {
     if (_formKey.currentState!.validate()) {
@@ -40,12 +40,16 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
       String password = _generateRandomPassword();
 
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
 
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
           'firstName': firstName,
           'lastName': lastName,
           'email': email,
@@ -60,7 +64,7 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
           'created_at': Timestamp.now(),
         });
 
-        sendEmail(_emailController.text.trim(),password);
+        // sendEmail(_emailController.text.trim(), password);
 
         _fetchCredentials(email);
 
@@ -80,7 +84,10 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
   }
 
   Future<void> _fetchCredentials(String email) async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('credentials').where('email', isEqualTo: email).get();
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('credentials')
+        .where('email', isEqualTo: email)
+        .get();
     if (snapshot.docs.isNotEmpty) {
       setState(() {
         _showCredentials = true;
@@ -90,9 +97,11 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
   }
 
   String _generateRandomPassword() {
-    const _chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const _chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final _random = Random.secure();
-    return List.generate(8, (index) => _chars[_random.nextInt(_chars.length)]).join();
+    return List.generate(8, (index) => _chars[_random.nextInt(_chars.length)])
+        .join();
   }
 
   void _copyToClipboard(String text) {
@@ -110,41 +119,44 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
           title: Text('Credentials'),
           content: _credentialsGenerated && _showCredentials
               ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var credential in _credentials)
-                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('Email: ${credential['email']}'),
-                        ),
-                        IconButton(
-                          onPressed: () => _copyToClipboard(credential['email']),
-                          icon: Icon(Icons.content_copy),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('Password: ${credential['password']}'),
-                        ),
-                        IconButton(
-                          onPressed: () => _copyToClipboard(credential['password']),
-                          icon: Icon(Icons.content_copy),
-                        ),
-                      ],
-                    ),
-                    Divider(),
+                    for (var credential in _credentials)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text('Email: ${credential['email']}'),
+                              ),
+                              IconButton(
+                                onPressed: () =>
+                                    _copyToClipboard(credential['email']),
+                                icon: Icon(Icons.content_copy),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child:
+                                    Text('Password: ${credential['password']}'),
+                              ),
+                              IconButton(
+                                onPressed: () =>
+                                    _copyToClipboard(credential['password']),
+                                icon: Icon(Icons.content_copy),
+                              ),
+                            ],
+                          ),
+                          Divider(),
+                        ],
+                      ),
                   ],
-                ),
-            ],
-          )
+                )
               : Text('No credentials available yet.'),
           actions: [
             TextButton(
@@ -244,9 +256,13 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
                   _addStaffMember();
                   _showCredentialsDialog();
                 },
-                child: Text('Add Staff Member',style: TextStyle(color: Colors.white),),
+                child: Text(
+                  'Add Staff Member',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.purple.shade600),
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.purple.shade600),
                 ),
               ),
             ],
@@ -260,8 +276,11 @@ class _AddStaffMemberPageState extends State<AddStaffMemberPage> {
             MaterialPageRoute(builder: (context) => StaffManagementPage()),
           );
         },
-        child: Icon(Icons.manage_accounts),
         backgroundColor: Colors.purple.shade600,
+        child: Icon(
+          Icons.manage_accounts,
+          color: Colors.white,
+        ),
       ),
     );
   }

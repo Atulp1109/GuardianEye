@@ -27,10 +27,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -44,37 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAxoySlSE3636tYkA0KIW9s76Nyl_1XKgA',
-    appId: '1:1010720226046:web:4e4bf2848ab2753224c3af',
-    messagingSenderId: '1010720226046',
-    projectId: 'guardians-eye',
-    authDomain: 'guardians-eye.firebaseapp.com',
-    storageBucket: 'guardians-eye.appspot.com',
+    apiKey: 'AIzaSyB7Tfesn9uf4Ua9azgen-q5s8FSXtkAzGY',
+    appId: '1:467218372665:web:8444386d89592b3ad295e8',
+    messagingSenderId: '467218372665',
+    projectId: 'gaurdianeye-cc53a',
+    authDomain: 'gaurdianeye-cc53a.firebaseapp.com',
+    storageBucket: 'gaurdianeye-cc53a.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCHgv-uj-6kZc1cXq4hXlj9aQo9nzepD1o',
-    appId: '1:1010720226046:android:d58ef515038c1a9a24c3af',
-    messagingSenderId: '1010720226046',
-    projectId: 'guardians-eye',
-    storageBucket: 'guardians-eye.appspot.com',
+    apiKey: 'AIzaSyDCJHXAbfWzj5R2zrW8YkMxY4TxZRArt0w',
+    appId: '1:467218372665:android:591a1693504a9919d295e8',
+    messagingSenderId: '467218372665',
+    projectId: 'gaurdianeye-cc53a',
+    storageBucket: 'gaurdianeye-cc53a.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyA2221YhqJGe_Gwh3JvPJWCSvaXf190KXM',
-    appId: '1:1010720226046:ios:14ff104d9afa64a824c3af',
-    messagingSenderId: '1010720226046',
-    projectId: 'guardians-eye',
-    storageBucket: 'guardians-eye.appspot.com',
+    apiKey: 'AIzaSyB2cIN08BOrmv9rEE23oM3w2LOUiqwxAh4',
+    appId: '1:467218372665:ios:a7117743d99f4950d295e8',
+    messagingSenderId: '467218372665',
+    projectId: 'gaurdianeye-cc53a',
+    storageBucket: 'gaurdianeye-cc53a.firebasestorage.app',
     iosBundleId: 'com.example.guardiansEye',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyA2221YhqJGe_Gwh3JvPJWCSvaXf190KXM',
-    appId: '1:1010720226046:ios:ffe9aeb98962931024c3af',
-    messagingSenderId: '1010720226046',
-    projectId: 'guardians-eye',
-    storageBucket: 'guardians-eye.appspot.com',
-    iosBundleId: 'com.example.guardiansEye.RunnerTests',
+    apiKey: 'AIzaSyB2cIN08BOrmv9rEE23oM3w2LOUiqwxAh4',
+    appId: '1:467218372665:ios:a7117743d99f4950d295e8',
+    messagingSenderId: '467218372665',
+    projectId: 'gaurdianeye-cc53a',
+    storageBucket: 'gaurdianeye-cc53a.firebasestorage.app',
+    iosBundleId: 'com.example.guardiansEye',
   );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyB7Tfesn9uf4Ua9azgen-q5s8FSXtkAzGY',
+    appId: '1:467218372665:web:df2c9f061b739b6ad295e8',
+    messagingSenderId: '467218372665',
+    projectId: 'gaurdianeye-cc53a',
+    authDomain: 'gaurdianeye-cc53a.firebaseapp.com',
+    storageBucket: 'gaurdianeye-cc53a.firebasestorage.app',
+  );
+
 }
