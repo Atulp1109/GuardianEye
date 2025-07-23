@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:guardians_eye/admin_settings_page.dart';
 import 'package:guardians_eye/authentication/views/login_page.dart';
 import 'add_staff.dart';
 import 'analytics_page.dart';
@@ -75,16 +76,20 @@ class AdminPage extends StatelessWidget {
               SizedBox(height: 30),
 
               // Additional Admin Features can be added here
-              // _buildAdminCard(
-              //   context,
-              //   icon: Icons.settings,
-              //   title: "Settings",
-              //   subtitle: "Configure system preferences",
-              //   color: Colors.blueGrey.shade400,
-              //   onTap: () {
-              //     // Add settings navigation
-              //   },
-              // ),
+              _buildAdminCard(
+                context,
+                icon: Icons.settings,
+                title: "Settings",
+                subtitle: "Configure system preferences",
+                color: Colors.blueGrey.shade400,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AdminSettingsPage()),
+                  );
+                },
+              ),
             ],
           ),
         ),

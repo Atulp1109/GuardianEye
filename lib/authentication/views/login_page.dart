@@ -115,45 +115,21 @@ class LoginPage extends StatelessWidget {
                               style: TextStyle(color: Colors.grey)),
                         ),
                       ),
-                      SizedBox(height: 40),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: MaterialButton(
-                              onPressed: () => authViewModel
-                                  .signInWithEmailAndPassword(isStaff: false),
-                              height: 50,
-                              color: Colors.purple[900],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: Center(
-                                child: Text("Login as Admin",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: MaterialButton(
-                              onPressed: () => authViewModel
-                                  .signInWithEmailAndPassword(isStaff: true),
-                              height: 50,
-                              color: Colors.purple[900],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: Center(
-                                child: Text("Login as Staff",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                            ),
-                          ),
-                        ],
+                      SizedBox(height: 30),
+                      MaterialButton(
+                        onPressed: () =>
+                            authViewModel.signInWithEmailAndPassword(),
+                        height: 50,
+                        color: Colors.purple[900],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: Center(
+                          child: Text("Login",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                        ),
                       ),
                     ],
                   ),

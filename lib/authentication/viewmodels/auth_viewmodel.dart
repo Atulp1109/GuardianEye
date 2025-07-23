@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:guardians_eye/admin_page.dart';
-import 'package:guardians_eye/staff_page.dart';
+import 'package:guardians_eye/registered_cases_screen.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 class AuthViewModel extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -14,7 +15,7 @@ class AuthViewModel extends GetxController {
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
 
-  Future<void> signInWithEmailAndPassword({required bool isStaff}) async {
+  Future<void> signInWithEmailAndPassword() async {
     try {
       isLoading(true);
 
@@ -41,21 +42,21 @@ class AuthViewModel extends GetxController {
       if (!userDoc.exists) {
         throw "User not registered in the system";
       }
-
       final userRole = userDoc.data()?['role'] ?? 'staff';
       final userName = userDoc.data()?['name'] ?? 'User';
-
+      await setValue('user_role', userRole);
       // Check authorization
-      if (isStaff && userRole != 'staff' && userRole != 'admin') {
+      if (userRole != 'staff' && userRole != 'admin') {
         throw "Not authorized as staff";
       }
 
-      if (!isStaff && userRole != 'admin') {
+      if (userRole != 'admin' && userRole != 'staff') {
         throw "Admin privileges required";
       }
 
       // Successful login
-      Get.offAll(() => userRole == 'admin' ? AdminPage() : StaffCasesPage());
+      Get.offAll(
+          () => userRole == 'admin' ? AdminPage() : RegisteredCasesScreen());
       Get.snackbar(
         "Welcome $userName",
         "Logged in as ${userRole.toUpperCase()}",

@@ -6,35 +6,47 @@ import 'archived_cases.dart';
 import 'case_details_page.dart';
 import 'case_registration_form.dart';
 
-class StaffCasesPage extends StatefulWidget {
+class RegisteredCasesScreen extends StatefulWidget {
+  const RegisteredCasesScreen({super.key});
+
   @override
-  _StaffCasesPageState createState() => _StaffCasesPageState();
+  State<RegisteredCasesScreen> createState() => _RegisteredCasesScreenState();
 }
 
-class _StaffCasesPageState extends State<StaffCasesPage> {
+class _RegisteredCasesScreenState extends State<RegisteredCasesScreen> {
   late List<Case> archivedCases = [];
   late List<Case> activeCases = [];
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Staff Cases Page'),
+        title: Text(
+          'Registered Cased',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.purple[600],
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: Icon(
+              Icons.notifications,
+              color: Colors.white,
+            ),
             onPressed: () {
               // Add your notification logic here
             },
           ),
           IconButton(
-            icon: Icon(Icons.archive),
+            icon: Icon(
+              Icons.archive,
+              color: Colors.white,
+            ),
             onPressed: () async {
               final unarchivedCase = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ArchivedCases(archivedCases: archivedCases)),
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ArchivedCases(archivedCases: archivedCases)),
               );
               if (unarchivedCase != null) {
                 setState(() {
@@ -60,12 +72,15 @@ class _StaffCasesPageState extends State<StaffCasesPage> {
             // Ensure all values are retrieved as strings and parse accordingly
             String id = doc.id;
             String name = data?['name'] ?? '';
-            String ageString = (data?['age'] ?? 0).toString(); // Parse age to string
+            String ageString =
+                (data?['age'] ?? 0).toString(); // Parse age to string
             String phoneNumber = data?['phone'] ?? '';
             String address = data?['address'] ?? '';
             String statusString = data?['status'] ?? '';
-            String imageUrl = (data?['imageUrls'] != null && (data?['imageUrls'] as List).isNotEmpty)
-                ? (data?['imageUrls'] as List)[0] // Retrieve the first image URL
+            String imageUrl = (data?['imageUrls'] != null &&
+                    (data?['imageUrls'] as List).isNotEmpty)
+                ? (data?['imageUrls']
+                    as List)[0] // Retrieve the first image URL
                 : '';
             // Use an empty string if no image URL is available
 
@@ -86,16 +101,6 @@ class _StaffCasesPageState extends State<StaffCasesPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Register Cases',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
               Expanded(
                 child: ListView.builder(
                   itemCount: cases.length,
@@ -107,19 +112,24 @@ class _StaffCasesPageState extends State<StaffCasesPage> {
                           color: Colors.red, // Delete color when sliding left
                           alignment: Alignment.centerLeft,
                           padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Text('Delete', style: TextStyle(color: Colors.white)),
+                          child: Text('Delete',
+                              style: TextStyle(color: Colors.white)),
                         ),
                         secondaryBackground: Container(
-                          color: Colors.blue, // Archive color when sliding right
+                          color:
+                              Colors.blue, // Archive color when sliding right
                           alignment: Alignment.centerRight,
                           padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Text('Archive', style: TextStyle(color: Colors.white)),
+                          child: Text('Archive',
+                              style: TextStyle(color: Colors.white)),
                         ),
                         onDismissed: (direction) {
                           if (direction == DismissDirection.endToStart) {
-                            _archiveCase(cases[index]); // Archive when swiped right
+                            _archiveCase(
+                                cases[index]); // Archive when swiped right
                           } else if (direction == DismissDirection.startToEnd) {
-                            _deleteCase(cases[index]); // Delete when swiped left
+                            _deleteCase(
+                                cases[index]); // Delete when swiped left
                           }
                         },
                         child: GestureDetector(
@@ -127,34 +137,42 @@ class _StaffCasesPageState extends State<StaffCasesPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => CaseDetailsPage(caseItem: cases[index]),
+                                builder: (context) =>
+                                    CaseDetailsPage(caseItem: cases[index]),
                               ),
                             );
                           },
                           child: Card(
+                            color: Colors.white60,
                             elevation: 4,
-                            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                            margin: EdgeInsets.symmetric(
+                                vertical: 16, horizontal: 16),
                             child: Padding(
                               padding: EdgeInsets.all(8),
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   // Image section
                                   cases[index].imageUrl.isNotEmpty
                                       ? CircleAvatar(
-                                    backgroundImage: NetworkImage(cases[index].imageUrl),
-                                    radius: 30,
-                                  )
-                                      : Icon(Icons.image), // Placeholder icon if imageUrl is empty
+                                          backgroundImage: NetworkImage(
+                                              cases[index].imageUrl),
+                                          radius: 30,
+                                        )
+                                      : Icon(Icons
+                                          .image), // Placeholder icon if imageUrl is empty
                                   SizedBox(width: 16),
                                   // Case details section
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'ID: ${cases[index].id}',
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                         Text(
                                           'Name: ${cases[index].name}',
@@ -196,22 +214,33 @@ class _StaffCasesPageState extends State<StaffCasesPage> {
               'phone': newCase.phoneNumber,
               'address': newCase.address,
               'status': newCase.status.toString().split('.').last,
-              'imageUrls': newCase.imageUrls, // Use imageUrls instead of imageUrl
+              'imageUrls':
+                  newCase.imageUrls, // Use imageUrls instead of imageUrl
             });
           }
         },
-        child: Icon(Icons.add_circle_outlined),
+        child: Icon(
+          Icons.add_circle_outlined,
+          color: Colors.white,
+        ),
         backgroundColor: Colors.purple[600],
       ),
     );
   }
+
   void _archiveCase(Case caseItem) async {
     try {
       // Add the case to the archived cases collection
-      await FirebaseFirestore.instance.collection('archived_cases').doc(caseItem.id).set(caseItem.toMap());
+      await FirebaseFirestore.instance
+          .collection('archived_cases')
+          .doc(caseItem.id)
+          .set(caseItem.toMap());
 
       // Remove the case from the active cases collection
-      await FirebaseFirestore.instance.collection('cases').doc(caseItem.id).delete();
+      await FirebaseFirestore.instance
+          .collection('cases')
+          .doc(caseItem.id)
+          .delete();
 
       setState(() {
         archivedCases.add(caseItem);
@@ -221,11 +250,12 @@ class _StaffCasesPageState extends State<StaffCasesPage> {
     }
   }
 
-
-
   void _deleteCase(Case caseItem) async {
     try {
-      await FirebaseFirestore.instance.collection('cases').doc(caseItem.id).delete();
+      await FirebaseFirestore.instance
+          .collection('cases')
+          .doc(caseItem.id)
+          .delete();
     } catch (e) {
       print('Error deleting case: $e');
     }
@@ -233,7 +263,8 @@ class _StaffCasesPageState extends State<StaffCasesPage> {
 
   Status getStatusFromString(String statusString) {
     try {
-      return Status.values.firstWhere((e) => e.toString().split('.')[1] == statusString);
+      return Status.values
+          .firstWhere((e) => e.toString().split('.')[1] == statusString);
     } catch (e) {
       print('Error parsing status: $e');
       return Status.inProcess;

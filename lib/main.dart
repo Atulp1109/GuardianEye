@@ -3,12 +3,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:guardians_eye/authentication/views/login_page.dart';
 import 'package:guardians_eye/bindings/initial_bindings.dart';
+import 'package:guardians_eye/services/notification_service.dart';
+import 'package:guardians_eye/splash_screen.dart';
 import 'authentication/viewmodels/auth_viewmodel.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp();
+  await NotificationService().init();
   Get.put<AuthViewModel>(AuthViewModel(), permanent: true);
   runApp(MyApp());
 }
@@ -34,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: SplashScreen(),
     );
   }
 }

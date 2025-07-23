@@ -1,32 +1,106 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
+import 'package:guardians_eye/services/cloudinary_services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'case.dart'; // Assuming you have a Case class defined
-import 'status.dart';
+import 'package:http/http.dart' as http;
 
 class CaseRegistrationPage extends StatefulWidget {
+  const CaseRegistrationPage({super.key});
+
   @override
   _CaseRegistrationPageState createState() => _CaseRegistrationPageState();
 }
 
 class _CaseRegistrationPageState extends State<CaseRegistrationPage> {
-  late List<File> _images = []; // Step 1: Define a list of Files
+  final List<File> _images = [];
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  bool _isLoading = false;
 
-  late TextEditingController _nameController;
-  late TextEditingController _ageController;
-  late TextEditingController _phoneNumberController;
-  late TextEditingController _addressController;
+  Future<void> _getImage() async {
+    final picker = ImagePicker();
+    final List<XFile> pickedFiles = await picker.pickMultiImage();
 
-  _CaseRegistrationPageState() {
-    _nameController = TextEditingController();
-    _ageController = TextEditingController();
-    _phoneNumberController = TextEditingController();
-    _addressController = TextEditingController();
+    if (pickedFiles.isNotEmpty) {
+      setState(() {
+        _images.addAll(pickedFiles.map((file) => File(file.path)));
+      });
+    }
+  }
+
+  Future<void> _submitForm() async {
+    if (_isLoading) return;
+
+    // Validate form
+    if (_nameController.text.isEmpty ||
+        _ageController.text.isEmpty ||
+        _phoneNumberController.text.isEmpty ||
+        _addressController.text.isEmpty ||
+        _images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('Please fill all fields and select at least one image')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Upload images to Cloudinary
+      final imageUrls = await CloudinaryService.uploadImages(_images);
+
+      // Save case data to Firestore
+      await FirebaseFirestore.instance.collection('cases').add({
+        'name': _nameController.text,
+        'age': _ageController.text,
+        'phone': _phoneNumberController.text,
+        'address': _addressController.text,
+        'status': 'inProcess',
+        'imageUrls': imageUrls,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Case registered successfully!')),
+      );
+
+      final response = await http.post(
+        Uri.parse("http://192.168.0.107:3000/register_case"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': _nameController.text,
+          'phone': _phoneNumberController.text,
+          'image_urls': imageUrls,
+        }),
+      );
+      // Show success message
+      if (response.statusCode == 200) {
+        print('Case registered successfully on server');
+      } else {
+        print('Failed to register case on server: ${response.body}');
+      }
+      // Clear form
+      _nameController.clear();
+      _ageController.clear();
+      _phoneNumberController.clear();
+      _addressController.clear();
+      setState(() => _images.clear());
+    } catch (e, trace) {
+      print('Error during case registration: $trace');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -39,105 +113,41 @@ class _CaseRegistrationPageState extends State<CaseRegistrationPage> {
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // UI for image selection
-            GridView.builder(
-              shrinkWrap: true,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 4.0,
-                mainAxisSpacing: 4.0,
+            // Image grid and form fields remain the same as before
+            // ...
+            if (_images.isNotEmpty)
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 4,
+                ),
+                itemCount: _images.length,
+                itemBuilder: (context, index) => Image.file(_images[index]),
               ),
-              itemCount: _images.length,
-              itemBuilder: (context, index) {
-                return Image.file(_images[index]);
-              },
-            ),
             ElevatedButton(
               onPressed: _getImage,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple[500]),
-              child: Text('Select Image',style: TextStyle(color: Colors.white),),
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.purple[500]),
+              child:
+                  Text('Select Image', style: TextStyle(color: Colors.white)),
             ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 8.0),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey, // Set border color here
-                  width: 1.0, // Set border width here
-                ),
-                borderRadius: BorderRadius.circular(8.0), // Set border radius here
-              ),
-              child: TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  border: InputBorder.none, // Hide the default border of TextFormField
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust content padding
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 8.0),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey, // Set border color here
-                  width: 1.0, // Set border width here
-                ),
-                borderRadius: BorderRadius.circular(8.0), // Set border radius here
-              ),
-              child: TextFormField(
-                controller: _ageController,
-                decoration: InputDecoration(
-                  labelText: 'Age',
-                  border: InputBorder.none, // Hide the default border of TextFormField
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust content padding
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 8.0),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey, // Set border color here
-                  width: 1.0, // Set border width here
-                ),
-                borderRadius: BorderRadius.circular(8.0), // Set border radius here
-              ),
-              child: TextFormField(
-                controller: _phoneNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  border: InputBorder.none, // Hide the default border of TextFormField
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust content padding
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 8.0),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey, // Set border color here
-                  width: 1.0, // Set border width here
-                ),
-                borderRadius: BorderRadius.circular(8.0), // Set border radius here
-              ),
-              child: TextFormField(
-                controller: _addressController,
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  border: InputBorder.none, // Hide the default border of TextFormField
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0), // Adjust content padding
-                ),
-                maxLines: 3,
-              ),
-            ),
+            _buildTextField(_nameController, 'Name',
+                keyboardType: TextInputType.name),
+            _buildTextField(_ageController, 'Age',
+                keyboardType: TextInputType.number),
+            _buildTextField(_phoneNumberController, 'Phone Number',
+                keyboardType: TextInputType.phone),
+            _buildTextField(_addressController, 'Address', maxLines: 3),
+            SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _submitForm,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple[900]),
-              child: Text('Submit',style: TextStyle(color: Colors.white),),
+              onPressed: _isLoading ? null : _submitForm,
+              child: _isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('Submit'),
             ),
           ],
         ),
@@ -145,133 +155,28 @@ class _CaseRegistrationPageState extends State<CaseRegistrationPage> {
     );
   }
 
-  Future<void> _getImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      setState(() {
-        // Ensure the picked file is not null and the path is not empty
-        if (pickedFile.path != null && pickedFile.path.isNotEmpty) {
-          _images.add(File(pickedFile.path)); // Add selected image to _images list
-        }
-      });
-    }
-  }
-
-  Future<void> _submitForm() async {
-    // Show loader while submitting the form
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent user from dismissing the dialog
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Submitting...'),
-            ],
-          ),
-        );
-      },
-    );
-
-    // Get values from controllers
-    String name = _nameController.text;
-    String ageText = _ageController.text;
-    int age = int.tryParse(ageText) ?? 0;
-    String phoneNumber = _phoneNumberController.text;
-    String address = _addressController.text;
-
-    // Check for empty fields and ensure at least one image is selected
-    if (name.isEmpty ||
-        ageText.isEmpty ||
-        phoneNumber.isEmpty ||
-        address.isEmpty ||
-        _images.isEmpty) {
-      Navigator.of(context).pop(); // Close the dialog
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Please fill in all fields and select at least one image.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey, width: 1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
-      );
-      return;
-    }
-
-    // Generate a unique ID for the new case
-    String id = UniqueKey().toString();
-
-    try {
-      List<String> imageUrls = [];
-
-      // Create a folder with the case ID as the folder name
-      String folderName = '$id';
-      Reference folderRef = FirebaseStorage.instance.ref().child(folderName);
-
-      // Upload each image to the folder
-      await Future.forEach(_images, (File image) async {
-        String imageName = '${DateTime.now().millisecondsSinceEpoch}.jpg'; // Unique name for each image
-        Reference imageRef = folderRef.child(imageName);
-        UploadTask uploadTask = imageRef.putFile(image);
-        TaskSnapshot storageSnapshot = await uploadTask;
-        String downloadUrl = await storageSnapshot.ref.getDownloadURL();
-        imageUrls.add(downloadUrl);
-      });
-
-      // Store case data in Firestore
-      await FirebaseFirestore.instance.collection('cases').add({
-        'name': name,
-        'age': age.toString(),
-        'phone': phoneNumber,
-        'address': address,
-        'status': Status.inProcess.toString().split('.').last,
-        'imageUrls': imageUrls,
-      });
-      String imageFolder = name + phoneNumber.toString();
-      final Uri serverUri = Uri.parse('http://192.168.182.238:5000/download_images');
-      final response = await http.post(
-        serverUri,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'id': imageFolder,
-          'image_urls': imageUrls,
-        }),
-      );
-
-      if (response.statusCode == 302) {
-        print('Data sent to server successfully');
-      } else {
-        print('Failed to send data to server: ${response.statusCode}');
-      }
-
-      // Case data successfully stored in Firestore
-      print('Case data stored in Firestore');
-
-      // Close the loading dialog
-      Navigator.of(context).pop();
-
-      // Navigate back to the previous screen
-      Navigator.pop(context);
-    } catch (e) {
-      // Handle errors
-      print('Error storing case data: $e');
-
-      // Close the loading dialog
-      Navigator.of(context).pop();
-    }
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+      ),
+    );
   }
 }

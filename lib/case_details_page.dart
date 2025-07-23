@@ -6,7 +6,7 @@ import 'status.dart';
 class CaseDetailsPage extends StatelessWidget {
   final Case caseItem;
 
-  const CaseDetailsPage({Key? key, required this.caseItem}) : super(key: key);
+  const CaseDetailsPage({super.key, required this.caseItem});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,8 @@ class CaseDetailsPage extends StatelessWidget {
           _buildDetailBox('Name', caseItem.name),
           _buildDetailBox('Age', caseItem.age),
           _buildDetailBox('ID', caseItem.id),
-          _buildDetailBox('Status', getStatusText(caseItem.status), color: getStatusColor(caseItem.status)),
+          _buildDetailBox('Status', getStatusText(caseItem.status),
+              color: getStatusColor(caseItem.status)),
           _buildDetailBox('Phone Number', caseItem.phoneNumber),
           _buildDetailBox('Address', caseItem.address),
         ],
